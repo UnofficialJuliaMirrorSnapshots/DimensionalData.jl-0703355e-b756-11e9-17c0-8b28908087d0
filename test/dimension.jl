@@ -4,8 +4,8 @@
     @test name(TestDim) == "Test dimension"
     @test shortname(TestDim) == "TestDim"
     @test val(TestDim(:test)) == :test
-    @test metadata(TestDim(1, "metadata", Order())) == "metadata"
-    @test units(TestDim) == ""
+    @test metadata(TestDim(1, AllignedGrid(), "metadata")) == "metadata"
+    @test units(TestDim) == nothing
     @test label(TestDim) == "Test dimension" 
     @test eltype(TestDim(1)) == Int
     @test eltype(TestDim([1,2,3])) == Vector{Int}
@@ -25,22 +25,23 @@ dimz = dims(da)
 @test slicedims(dimz, (2:4, 3)) == ((X(LinRange(142,146,3)),), (Y(8.0),))
 @test name(dimz) == ("X", "Y") 
 @test shortname(dimz) == ("X", "Y") 
-@test units(dimz) == ("", "") 
+@test units(dimz) == (nothing, nothing) 
 @test label(dimz) == ("X, Y") 
 
 a = [1 2 3 4 
      2 3 4 5
      3 4 5 6]
-da = DimensionalArray(a, (X((143, 145)), Y((-38, -35))))
-dimz = dims(da)
+dimz = (X((143, 145), AllignedGrid(), nothing), 
+        Y((-38, -35), AllignedGrid(), nothing))
+da = DimensionalArray(a, dimz)
 
 @testset "dims" begin
     @test dims(dimz) === dimz
     @test dims(dimz, X) === dimz[1]
     @test dims(dimz, Y) === dimz[2]
     @test_throws ArgumentError dims(dimz, Time)
-    @test dimz == (X(LinRange(143, 145, 3)), Y(LinRange(-38, -35, 4)))
-    @test typeof(dimz) == Tuple{X{LinRange{Float64},Nothing,Order{Forward,Forward}},Y{LinRange{Float64},Nothing,Order{Forward,Forward}}}
+    @test typeof(dims(da)) == Tuple{X{LinRange{Float64},AllignedGrid{Ordered{Forward,Forward},Center,UnknownSampling,Nothing},Nothing},
+                                Y{LinRange{Float64},AllignedGrid{Ordered{Forward,Forward},Center,UnknownSampling,Nothing},Nothing}}
 end
 
 @testset "arbitrary dim names" begin
